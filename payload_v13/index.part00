@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Quiz do Casal Halloween — Fred & Irene</title>
+<style>
+:root{
+  --bg:#08050d;
+  --bg2:#100816;
+  --panel:#16101f;
+  --panel2:#201428;
+  --line:rgba(255,255,255,.11);
+  --soft:rgba(255,255,255,.06);
+  --orange:#ff7a18;
+  --orange2:#ffae46;
+  --purple:#8d45ff;
+  --pink:#ff58ad;
+  --cream:#fff5e8;
+  --muted:#d1c1da;
+  --green:#7cffad;
+  --red:#ff6779;
+  --gold:#ffd36f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:linear-gradient(135deg,#050308,#100716 58%,#07040c);color:var(--cream);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,select,input{font:inherit}
+button{user-select:none;-webkit-tap-highlight-color:transparent}
+#app{position:relative;width:100vw;height:100vh;overflow:hidden}
+.screen{position:absolute;inset:0;display:none}
+.screen.active{display:block}
+.hidden{display:none !important}
+img{display:block;max-width:100%}
+
+/* HOME */
+#home{
+  background:
+    radial-gradient(circle at 14% 12%, rgba(141,69,255,.22), transparent 25%),
+    radial-gradient(circle at 88% 10%, rgba(255,122,24,.18), transparent 26%),
+    linear-gradient(135deg,#06040a 0%, #100818 55%, #08040e 100%);
+  padding:1.5vw;
+}
+.homeBackdrop{
+  position:absolute;inset:0;
+  background:url("home.jpg") center center / cover no-repeat;
+  filter:saturate(1.06) contrast(1.04);
+  transform:scale(1.02);
+}
+.homeShade{
+  position:absolute;inset:0;
+  background:linear-gradient(90deg, rgba(4,2,8,.78) 0%, rgba(7,4,11,.5) 32%, rgba(6,3,9,.7) 100%);
+}
+.homeShell{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:minmax(360px,42%) 1fr;gap:1.15vw}
+.homeLeft,.homeRight{min-height:0}
+.homeLeft{
+  display:flex;align-items:stretch;justify-content:center;
+}
+.homeCard{
+  width:100%;height:100%;border-radius:28px;overflow:hidden;position:relative;
+  border:1px solid var(--line);background:rgba(16,10,23,.62);box-shadow:0 26px 80px rgba(0,0,0,.36);
+  backdrop-filter: blur(10px);
+}
+.homePreview{
+  position:absolute;inset:0;
+  background:url("home.jpg") center center / cover no-repeat;
+  filter:saturate(1.08) contrast(1.03);
+}
+.homeOverlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(10,6,14,.12) 0%, rgba(10,6,14,.05) 34%, rgba(10,6,14,.78) 100%);
+}
+.previewBadge{position:absolute;top:18px;left:18px;padding:8px 14px;border-radius:999px;background:rgba(14,8,20,.68);border:1px solid var(--line);font-weight:900;font-size:14px;backdrop-filter:blur(8px)}
+.previewFooter{position:absolute;left:18px;right:18px;bottom:18px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.previewText h1{margin:0 0 8px;font-size:clamp(28px,2.6vw,54px);line-height:.95;color:#ff9f3c;text-shadow:0 3px 0 #7e3215}
+.previewText p{margin:0;color:#fff2e6;font-size:clamp(14px,1.02vw,21px);max-width:26vw;line-height:1.35}
+.miniPills{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.miniPill{padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);font-weight:800;font-size:12px;color:#ffeede}
+.coupleThumb{width:min(28%,180px);border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.coupleThumb img{width:100%;height:100%;object-fit:cover;object-position:center 30%}
+
+.homeRight{display:flex;align-items:center;justify-content:center}
+.heroPanel{
+  width:min(760px,100%);padding:28px;border-radius:30px;border:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(27,17,35,.90), rgba(16,10,23,.94));
+  box-shadow:0 28px 70px rgba(0,0,0,.42);backdrop-filter:blur(12px);
+}
+.topRow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px}
+.kicker{display:flex;gap:10px;flex-wrap:wrap}
+.kicker span{padding:9px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:13px;font-weight:900;color:#ffe7d3}
+.homeAudioBtn{
+  min-width:116px;min-height:48px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,170,75,.32);
+  background:rgba(255,122,24,.10);color:#ffe7d0;cursor:pointer;font-weight:900;
+}
+.homeAudioBtn.on{background:linear-gradient(90deg,rgba(255,122,24,.22),rgba(141,69,255,.22))}
+.heroPanel h2{margin:0;font-size:clamp(34px,3.2vw,62px);line-height:.94;letter-spacing:-.03em;color:#fff}
+.heroPanel h2 strong{color:#ff9d3d;text-shadow:0 3px 0 #7a3014}
+.subTitle{margin:14px 0 8px;font-size:clamp(19px,1.45vw,29px);font-weight:900;color:#ffe7cf}
+.desc{margin:0 0 18px;color:var(--muted);font-size:clamp(15px,1.03vw,20px);line-height:1.55}
+.statsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+.statCard{padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.statCard .label{font-size:12px;color:#e7d4c9;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.statCard .value{margin-top:6px;font-size:clamp(17px,1.25vw,24px);font-weight:1000}
+.playBtn{
+  width:100%;min-height:72px;border:none;border-radius:18px;cursor:pointer;
+  background:linear-gradient(90deg,var(--orange2),var(--orange));color:#1c0902;font-size:clamp(21px,1.45vw,28px);font-weight:1000;
+  box-shadow:0 16px 32px rgba(255,122,24,.24);
+}
+.playBtn:active{transform:translateY(1px)}
+.menuGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.menuBtn{
+  min-height:68px;padding:12px;border-radius:16px;border:1px solid var(--line);cursor:pointer;
+  background:#181120;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+}
+.menuBtn .icon{font-size:22px}
+.menuBtn .text{font-size:13px;font-weight:900}
+.menuBtn:hover,.homeAudioBtn:hover,.playBtn:hover,.topBtn:hover,.ctlBtn:hover,.choiceBtn:hover,.smallBtn:hover{filter:brightness(1.05)}
+
+/* GAME */
+#game{padding:1.15vw;background:radial-gradient(circle at 12% 8%,rgba(141,69,255,.24),transparent 26%),radial-gradient(circle at 88% 8%,rgba(255,122,24,.18),transparent 28%),linear-gradient(135deg,#050309,#100716 56%,#07040c)}
+.gameShell{height:100%;display:flex;flex-direction:column;gap:.85vw}
+.gameTop{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1vw}
+.topBtn{min-height:48px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:#17101d;color:#fff;cursor:pointer;font-weight:900}
+.gameTitle{text-align:center;font-size:clamp(21px,1.65vw,36px);font-weight:1000;letter-spacing:.03em}
+.topRight{display:flex;align-items:center;gap:.55vw}
+.counter,.scoreBox{padding:.6vw .9vw;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:clamp(13px,.85vw,18px);font-weight:900}
+.mainBoard{flex:1;min-height:0;display:grid;grid-template-columns:minmax(280px,30%) 1fr;gap:1vw}
+.leftPanel,.rightPanel{border-radius:26px;border:1px solid var(--line);overflow:hidden;background:linear-gradient(180deg,rgba(30,17,38,.96),rgba(14,8,20,.98));box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.leftPanel{position:relative}
+.leftPhoto{width:100%;height:100%;object-fit:cover;object-position:center 24%;filter:saturate(1.08) contrast(1.04)}
+.leftOverlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(5,3,8,.18) 58%,rgba(5,3,8,.88) 100%)}
+.coupleTag{position:absolute;left:5%;right:5%;bottom:4%;padding:12px 14px;border-radius:18px;background:rgba(10,6,14,.74);border:1px solid var(--line);text-align:center;font-size:clamp(18px,1.15vw,24px);font-weight:1000;backdrop-filter:blur(8px)}
+.rightPanel{display:flex;flex-direction:column;padding:1.2vw 1.35vw;position:relative}
+.rightPanel::after{content:"🕸️";position:absolute;right:-.3vw;top:-.8vw;font-size:8vw;opacity:.07;pointer-events:none}
+.infoRow{display:flex;align-items:center;justify-content:space-between;gap:1vw}
+.categoryBadge{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:rgba(141,69,255,.13);border:1px solid rgba(141,69,255,.28);color:#e4cffd;font-size:clamp(12px,.82vw,18px);font-weight:1000;letter-spacing:.05em;text-transform:uppercase}
+.turnBadge{font-size:clamp(15px,.95vw,21px);font-weight:900;color:#ffd9b5}
+.cardStage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:.45vw 0}
+.questionCard{width:100%;height:100%;min-height:310px;max-height:520px;padding:1.7vw;border-radius:26px;border:1px solid rgba(255,255,255,.11);background:radial-gradient(circle at 86% 12%,rgba(255,122,24,.14),transparent 26%),radial-gradient(circle at 12% 84%,rgba(156,77,255,.16),transparent 30%),linear-gradient(180deg,#1a1021,#100b15);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 22px 50px rgba(0,0,0,.32);transition:transform .42s ease,opacity .24s ease;transform-style:preserve-3d}
+.questionCard.flip{transform:rotateY(180deg);opacity:.16}
+.questionText{font-size:clamp(31px,3vw,62px);line-height:1.05;font-weight:1000;letter-spacing:-.03em;max-width:96%}
+.promptText{margin-top:14px;color:var(--muted);font-size:clamp(16px,1.02vw,22px);line-height:1.45;max-width:92%}
+.controlsWrap{display:flex;flex-direction:column;gap:.7vw}
+.gameControls{display:grid;grid-template-columns:1.18fr .9fr .9fr .78fr;gap:.7vw}
+.ctlBtn,.smallBtn,.choiceBtn{border:none;cursor:pointer;font-weight:1000}
+.ctlBtn{min-height:60px;border-radius:16px;font-size:clamp(14px,.92vw,20px)}
+.ctlBtn.primary{background:linear-gradient(90deg,var(--orange2),var(--orange));color:#1a0902}
+.ctlBtn.good{background:rgba(124,255,173,.13);color:#baffd0;border:1px solid rgba(124,255,173,.22)}
+.ctlBtn.bad{background:rgba(255,103,121,.12);color:#ffb5c0;border:1px solid rgba(255,103,121,.22)}
+.ctlBtn.secondary{background:#281832;color:#fff;border:1px solid var(--line)}
+.progressWrap{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.progressBar{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--orange));transition:width .35s ease}
+
+/* MODALS / FEEDBACK */
+.modal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,2,8,.82);backdrop-filter:blur(10px);z-index:20;padding:3vw}
+.modal.show{display:flex}
+.modalBox{width:min(780px,88vw);background:linear-gradient(180deg,rgba(34,20,43,.98),rgba(18,11,24,.98));border:1px solid rgba(255,255,255,.12);border-radius:28px;padding:30px;box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 40px rgba(156,77,255,.12)}
+.modalTop{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.modalBox h2{font-size:34px;margin:0 0 12px}
+.modalBox p,.modalBox li{color:var(--muted);font-size:18px;line-height:1.55}
+.modalActions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;margin-top:22px}
+.smallBtn{min-height:52px;padding:0 20px;border-radius:15px}
+.smallBtn.primary{background:linear-gradient(90deg,var(--orange2),var(--orange));color:#1a0902}
+.smallBtn.secondary{background:#28172f;color:#f6e6ff;border:1px solid var(--line)}
+.smallBtn.good{background:rgba(124,255,173,.13);color:#b9ffd0;border:1px solid rgba(124,255,173,.23)}
+.smallBtn.bad{background:rgba(255,98,118,.12);color:#ffb4c0;border:1px solid rgba(255,98,118,.22)}
+.selectField{width:100%;height:56px;border-radius:14px;background:#100b15;color:#fff;border:1px solid rgba(255,255,255,.12);padding:0 14px}
+.toast{position:absolute;left:50%;top:9%;transform:translate(-50%,-18px);opacity:0;pointer-events:none;background:#120b18;border:1px solid rgba(255,255,255,.12);padding:14px 20px;border-radius:999px;font-weight:1000;z-index:15;transition:.25s ease;box-shadow:0 18px 45px rgba(0,0,0,.35)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:12}.confetti span{position:absolute;top:-20px;font-size:22px;animation:fall 1.8s ease-in forwards}@keyframes fall{to{transform:translateY(115vh) rotate(520deg);opacity:.15}}
+.testPanel{position:fixed;left:14px;bottom:14px;z-index:50;background:rgba(0,0,0,.72);padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.18);font:12px/1.35 monospace;max-width:52vw;white-space:pre-wrap}
+
+@media (max-width:1200px){
+  .homeShell{grid-template-columns:38% 1fr}
+  .menuGrid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:960px){
+  .homeShell,.mainBoard{grid-template-columns:1fr}
+  .homeLeft{display:none}
+  .gameControls{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <section id="home" class="screen active" aria-label="Tela principal Quiz do Casal Halloween">
+    <div class="homeBackdrop"></div>
+    <div class="homeShade"></div>
+    <div class="homeShell">
+      <div class="homeLeft">
+        <div class="homeCard">
+          <div class="homePreview"></div>
+          <div class="homeOverlay"></div>
+          <div class="previewBadge">🎃 EDIÇÃO HALLOWEEN</div>
+          <div class="previewFooter">
+            <div class="previewText">
+              <h1>QUIZ DO CASAL<br>HALLOWEEN</h1>
+              <p>Os segredos de Fred & Irene em uma noite de mistério, conexão e química.</p>
+              <div class="miniPills">
+                <span class="miniPill">🔮 Mistério</span>
+                <span class="miniPill">❤️ Conexão</span>
+                <span class="miniPill">🌶️ Picante</span>
+              </div>
+            </div>
+            <div class="coupleThumb"><img src="couple.jpg" alt="Fred e Irene em versão Halloween"></div>
+          </div>
+        </div>
+      </div>
+      <div class="homeRight">
+        <div class="heroPanel">
+          <div class="topRow">
+            <div class="kicker">
+              <span>👻 Modo TV</span>
+              <span>📱 Android</span>
+              <span>🕯️ Offline</span>
+            </div>
+            <button id="homeAudioBtn" class="homeAudioBtn" type="button">🔇 Áudio</button>
+          </div>
+          <h2><strong>Quiz do Casal</strong><br>Fred & Irene</h2>
+          <div class="subTitle">Uma noite especial com gostos, sonhos, mistério e química.</div>
+          <p class="desc">Tudo reorganizado para abrir bonito, com imagem melhor enquadrada, botões separados e totalmente funcionais. Escolham as configurações e entrem na mansão.</p>
+          <div class="statsGrid">
+            <div class="statCard"><div class="label">Personagens</div><div class="value">Fred ❤️ Irene</div></div>
+            <div class="statCard"><div class="label">Categorias</div><div class="value">5 temas</div></div>
+            <div class="statCard"><div class="label">Formato</div><div class="value">TV 16:9</div></div>
+          </div>
+          <button id="playBtn" class="playBtn" type="button">🎃 JOGAR AGORA</button>
+          <div class="menuGrid">
+            <button id="howBtn" class="menuBtn" type="button"><span class="icon">👻</span><span class="text">Como funciona</span></button>
+            <button id="scoreBtn" class="menuBtn" type="button"><span class="icon">🏆</span><span class="text">Placar</span></button>
+            <button id="settingsBtn" class="menuBtn" type="button"><span class="icon">⚙️</span><span class="text">Configurações</span></button>
+            <button id="roundsBtn" class="menuBtn" type="button"><span class="icon">🎯</span><span class="text">Rodadas</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="game" class="screen">
+    <div class="gameShell">
+      <div class="gameTop">
+        <button class="topBtn" id="backHome" type="button">← Início</button>
+        <div class="gameTitle">🎃 QUIZ DO CASAL — FRED & IRENE</div>
+        <div class="topRight">
+          <div class="counter">Rodada <span id="roundNow">1</span>/<span id="roundTotal">18</span></div>
+          <div class="scoreBox">🕯️ <span id="score">0</span> pts</div>
+          <button class="topBtn" id="gameAudio" type="button">🔊</button>
+        </div>
+      </div>
+
+      <div class="mainBoard">
+        <div class="leftPanel">
+          <img class="leftPhoto" src="couple.jpg" alt="Fred e Irene em versão temática de Halloween">
+          <div class="leftOverlay"></div>
+          <div class="coupleTag">Fred ❤️ Irene • 4 meses de mistérios</div>
+        </div>
+
+        <div class="rightPanel">
+          <div class="infoRow">
+            <div class="categoryBadge" id="categoryBadge">🔮 MISTÉRIO</div>
+            <div class="turnBadge" id="turnBadge">Responde: Fred</div>
+          </div>
+
+          <div class="cardStage">
+            <div class="questionCard" id="questionCard">
+              <div class="questionText" id="questionText">Preparados para descobrir mais um segredo?</div>
+              <div class="promptText" id="promptText">Clique em “Próxima” para começar.</div>
+            </div>
+          </div>
+
+          <div class="controlsWrap">
+            <div class="gameControls">
+              <button class="ctlBtn primary" id="guessBtn" type="button">💘 Tentar adivinhar</button>
+              <button class="ctlBtn good" id="hitBtn" type="button">😏 Acertou +1</button>
+              <button class="ctlBtn bad" id="missBtn" type="button">👻 Errou</button>
+              <button class="ctlBtn secondary" id="nextBtn" type="button">➡ Próxima</button>
+            </div>
+            <div class="progressWrap"><div class="progressBar" id="progressBar"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="confetti" id="confetti"></div>
+  </section>
+
+  <div class="modal" id="howModal">
+    <div class="modalBox">
+      <div class="modalTop"><h2>👻 Como funciona</h2></div>
+      <ol>
+        <li>O jogo alterna entre Fred e Irene.</li>
+        <li>Um responde à pergunta; o outro pode tentar adivinhar a resposta.</li>
+        <li>Quando houver acerto ou sintonia, marque +1 ponto.</li>
+        <li>As categorias misturam gostos, sonhos, conexão, mistério e clima picante.</li>
+      </ol>
+      <div class="modalActions"><button class="smallBtn primary closeModal" type="button">Entendi</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="scoreModal">
+    <div class="modalBox">
+      <div class="modalTop"><h2>🏆 Placar atual</h2></div>
+      <p style="font-size:32px;font-weight:1000;color:#ffd36f"><span id="scoreModalValue">0</span> pontos de conexão</p>
+      <p id="scoreMessage">A mansão ainda tem muitos segredos para revelar.</p>
+      <div class="modalActions"><button class="smallBtn primary closeModal" type="button">Voltar</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="modalBox">
+      <div class="modalTop"><h2>⚙️ Configurações</h2></div>
+      <p>Intensidade das perguntas:</p>
+      <select id="intensity" class="selectField">
+        <option value="leve">Leve</option>
+        <option value="misto" selected>Misto</option>
+        <option value="picante">Mais picante</option>
+      </select>
+      <div class="modalActions"><button class="smallBtn primary closeModal" type="button">Salvar</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="roundsModal">
+    <div class="modalBox">
+      <div class="modalTop"><h2>🎯 Quantidade de rodadas</h2></div>
+      <select id="roundCount" class="selectField">
+        <option value="12">12 rodadas</option>
+        <option value="18" selected>18 rodadas</option>
+        <option value="24">24 rodadas</option>
+        <option value="30">30 rodadas</option>
+      </select>
+      <div class="modalActions"><button class="smallBtn primary closeModal" type="button">Confirmar</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="guessModal">
+    <div class="modalBox">
+      <div class="modalTop"><h2>💀 Hora do palpite</h2></div>
+      <p id="guessText">Tente adivinhar a resposta antes da revelação.</p>
+      <div class="modalActi
