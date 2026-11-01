@@ -1,0 +1,146 @@
+ass="modalBox">
+      <h2>🎯 Quantidade de rodadas</h2>
+      <select id="roundCount" style="width:100%;height:56px;border-radius:14px;background:#100b15;color:#fff;border:1px solid rgba(255,255,255,.12);padding:0 14px">
+        <option value="12">12 rodadas</option>
+        <option value="18" selected>18 rodadas</option>
+        <option value="24">24 rodadas</option>
+        <option value="30">30 rodadas</option>
+      </select>
+      <div class="modalActions"><button class="btn primary closeModal">Confirmar</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="guessModal">
+    <div class="modalBox">
+      <h2>💀 Hora do palpite</h2>
+      <p id="guessText">Tente adivinhar a resposta antes da revelação.</p>
+      <div class="modalActions">
+        <button class="btn green" id="guessHit">Acertou +1</button>
+        <button class="btn red" id="guessMiss">Errou</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const qs=(s)=>document.querySelector(s);
+const qsa=(s)=>[...document.querySelectorAll(s)];
+
+const pools={
+  gostos:[
+    "Qual comida te deixa feliz quase instantaneamente?",
+    "Qual filme ou série você reveria sem cansar?",
+    "Qual música combina mais com a sua fase atual?",
+    "Praia, serra ou cidade grande: qual viagem combina mais com você?",
+    "Qual pequeno luxo do dia a dia você não abre mão?",
+    "Qual presente te emociona mais: útil, romântico ou surpresa?",
+    "Qual programa simples a dois você considera perfeito?",
+    "Qual coisa boba sempre consegue te fazer rir?",
+    "Qual cheiro te traz uma memória boa?",
+    "Que sobremesa você escolheria agora sem pensar duas vezes?"
+  ],
+  sonhos:[
+    "Qual viagem você mais quer fazer nos próximos anos?",
+    "Como seria a casa dos seus sonhos?",
+    "Qual conquista profissional você ainda quer muito viver?",
+    "Que experiência gostaria de viver em casal pelo menos uma vez?",
+    "Se dinheiro não fosse problema, como seria um ano perfeito?",
+    "Qual hábito você gostaria de construir junto com alguém?",
+    "Você se imagina morando em outra cidade ou país um dia?",
+    "Qual sonho seu pouca gente conhece?",
+    "Que lembrança gostaria de construir comigo daqui a um ano?",
+    "O que significa ter uma vida boa para você?"
+  ],
+  conexao:[
+    "O que mais te chamou atenção em mim no começo?",
+    "Em que momento percebeu que estava se envolvendo de verdade?",
+    "Qual lembrança desses quatro meses você guardaria numa cápsula do tempo?",
+    "O que te faz sentir mais cuidado numa relação?",
+    "Qual gesto meu te deixa mais confortável perto de mim?",
+    "O que nós fazemos melhor quando estamos juntos?",
+    "Qual qualidade minha combina mais com a sua?",
+    "Que encontro nosso você gostaria de repetir?",
+    "O que gostaria que eu entendesse melhor sobre você?",
+    "Qual foi a surpresa mais positiva que teve sobre mim?"
+  ],
+  misterio:[
+    "Qual pergunta você sempre quis me fazer, mas ainda não fez?",
+    "Se eu tivesse um segredo inocente, sobre o que você acha que seria?",
+    "Qual mania minha você acha que já conseguiu decifrar?",
+    "Qual detalhe meu percebeu antes de eu contar?",
+    "Se pudesse ler um pensamento meu por 10 segundos, quando escolheria?",
+    "Qual coisa sobre mim você acha que ainda vai descobrir?",
+    "Quem provavelmente se assusta primeiro em um filme de terror?",
+    "Se nossa história fosse um suspense, qual seria o título?",
+    "Qual foi o maior mistério sobre mim que você já desvendou?",
+    "Qual seria a pergunta perfeita para me deixar sem resposta?"
+  ],
+  picante:[
+    "Qual clima deixa um encontro mais sedutor para você?",
+    "Qual elogio meu mexe mais com você?",
+    "O que torna um beijo inesquecível para você?",
+    "Qual momento nosso teve mais química até agora?",
+    "Você prefere romance devagar ou uma surpresa mais ousada?",
+    "Qual detalhe no visual de alguém você acha especialmente atraente?",
+    "Qual seria o cenário perfeito para uma noite romântica?",
+    "Qual tipo de carinho costuma te arrepiar mais?",
+    "O que cria mais tensão boa: olhar, conversa, toque ou surpresa?",
+    "Qual música combina com uma noite mais intensa entre nós?"
+  ]
+};
+
+let state={
+  names:["Fred","Irene"],score:0,round:0,total:18,turn:0,deck:[],audio:false,started:false
+};
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function buildDeck(){
+  const intensity=qs("#intensity").value;
+  let all=[];
+  ["gostos","sonhos","conexao","misterio"].forEach(c=>pools[c].forEach(q=>all.push({cat:c,q})));
+  if(intensity==="misto"||intensity==="picante"){
+    pools.picante.forEach(q=>all.push({cat:"picante",q}));
+    if(intensity==="picante") pools.picante.forEach(q=>all.push({cat:"picante",q}));
+  }
+  const seen=new Set(), deck=[];
+  for(const item of shuffle(all)){
+    const k=item.cat+"|"+item.q;
+    if(!seen.has(k)){seen.add(k);deck.push(item)}
+    if(deck.length>=state.total)break;
+  }
+  return deck;
+}
+const catMap={
+  gostos:["🍿","GOSTOS"],
+  sonhos:["🌙","SONHOS"],
+  conexao:["❤️","CONEXÃO"],
+  misterio:["🔮","MISTÉRIO"],
+  picante:["🌶️","PICANTE"]
+};
+
+function showScreen(id){
+  qsa(".screen").forEach(x=>x.classList.remove("active"));
+  qs(id).classList.add("active");
+}
+function showModal(id){qs(id).classList.add("show")}
+function hideModals(){qsa(".modal").forEach(m=>m.classList.remove("show"))}
+qsa(".closeModal").forEach(b=>b.addEventListener("click",hideModals));
+qsa(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)hideModals()}));
+
+function startGame(){
+  if(!audio.running) startAudio();
+  state.total=parseInt(qs("#roundCount").value,10);
+  state.score=0;state.round=0;state.turn=Math.random()<.5?0:1;state.deck=buildDeck();state.started=true;
+  qs("#roundTotal").textContent=state.total;
+  qs("#score").textContent="0";
+  showScreen("#game");
+  nextQuestion(true);
+}
+
+function nextQuestion(first=false){
+  if(state.round>=state.total || state.round>=state.deck.length){
+    endGame();return;
+  }
+  const card=qs("#questionCard");
+  card.classList.add("
