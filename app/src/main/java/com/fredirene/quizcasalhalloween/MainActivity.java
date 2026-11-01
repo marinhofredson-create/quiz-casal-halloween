@@ -4,12 +4,11 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -23,7 +22,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN);
         applyImmersiveMode();
 
         FrameLayout root = new FrameLayout(this);
@@ -31,7 +30,7 @@ public class MainActivity extends Activity {
         setContentView(root);
 
         try {
-            webView = new WebView(getApplicationContext());
+            webView = new WebView(this);
             configureWebView(webView);
             root.addView(webView, new FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT,
@@ -63,23 +62,17 @@ public class MainActivity extends Activity {
         view.setVerticalScrollBarEnabled(false);
         view.setHorizontalScrollBarEnabled(false);
         view.setWebChromeClient(new WebChromeClient());
-        view.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                super.onReceivedError(view, request, error);
-            }
-        });
+        view.setWebViewClient(new WebViewClient());
         applySystemUiFlags(view);
     }
 
     private void showFallback(FrameLayout root, Throwable error) {
         TextView message = new TextView(this);
         message.setTextColor(Color.WHITE);
-        message.setTextSize(20f);
-        message.setGravity(android.view.Gravity.CENTER);
+        message.setTextSize(18f);
+        message.setGravity(Gravity.CENTER);
         message.setPadding(40, 40, 40, 40);
-        message.setText("Quiz do Casal Halloween\n\nNão foi possível iniciar o componente WebView deste aparelho.\n\n" +
-                error.getClass().getSimpleName());
+        message.setText("Quiz do Casal Halloween\n\nNão foi possível iniciar o WebView do Android.\nAtualize o Android System WebView/Google Chrome e abra novamente.\n\nErro: " + error.getClass().getSimpleName());
         root.addView(message, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
@@ -98,10 +91,8 @@ public class MainActivity extends Activity {
         );
     }
 
-    @SuppressWarnings("deprecation")
     private void applyImmersiveMode() {
-        View decor = getWindow().getDecorView();
-        applySystemUiFlags(decor);
+        applySystemUiFlags(getWindow().getDecorView());
     }
 
     @Override
@@ -126,24 +117,20 @@ public class MainActivity extends Activity {
     @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
+        if (webView != null && webView.canGoBack()) webView.goBack();
+        else super.onBackPressed();
     }
 
     @Override
     protected void onDestroy() {
         if (webView != null) {
             try {
-                webView.loadUrl("about:blank");
                 webView.stopLoading();
-                webView.setWebChromeClient(null);
-                webView.setWebViewClient(null);
+                webView.loadUrl("about:blank");
+                webView.clearHistory();
+                webView.removeAllViews();
                 webView.destroy();
-            } catch (Throwable ignored) {
-            }
+            } catch (Throwable ignored) {}
             webView = null;
         }
         super.onDestroy();
