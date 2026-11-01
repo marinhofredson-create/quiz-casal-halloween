@@ -1,0 +1,109 @@
+flip");
+  setTimeout(()=>{
+    const item=state.deck[state.round];
+    state.round++;
+    state.turn=1-state.turn;
+    const [icon,label]=catMap[item.cat];
+    qs("#categoryBadge").textContent=icon+" "+label;
+    qs("#turnBadge").textContent="Responde: "+state.names[state.turn];
+    qs("#questionText").textContent=item.q;
+    qs("#promptText").textContent="Conversem sem pressa. Vale rir, provocar e contar histórias.";
+    qs("#roundNow").textContent=state.round;
+    qs("#progressBar").style.width=((state.round/state.total)*100)+"%";
+    card.classList.remove("flip");
+    if(!first){sfx("next");toast("🦇 Nova pergunta revelada");}
+  },260);
+}
+
+function addPoint(){
+  sfx("hit");
+  state.score++;
+  qs("#score").textContent=state.score;
+  burst();
+  toast("🕯️ +1 ponto de conexão");
+}
+
+function toast(msg){
+  const t=qs("#toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(window.__toast);
+  window.__toast=setTimeout(()=>t.classList.remove("show"),1300);
+}
+function burst(){
+  const c=qs("#confetti");
+  const icons=["🎃","🦇","✨","🕯️","❤️"];
+  for(let i=0;i<22;i++){
+    const s=document.createElement("span");
+    s.textContent=icons[Math.floor(Math.random()*icons.length)];
+    s.style.left=(10+Math.random()*80)+"%";
+    s.style.animationDelay=(Math.random()*.35)+"s";
+    c.appendChild(s);
+    setTimeout(()=>s.remove(),2200);
+  }
+}
+function endGame(){
+  qs("#scoreModalValue").textContent=state.score;
+  const p=state.total?state.score/state.total:0;
+  qs("#scoreMessage").textContent=
+    p>=.75?"Vocês estão assustadoramente sincronizados. A química venceu a assombração.":
+    p>=.45?"Vocês já se conhecem bem, mas a mansão ainda guarda bons segredos.":
+    "Ainda há muitos mistérios para descobrir — ótima desculpa para uma nova rodada.";
+  showModal("#scoreModal");
+}
+
+qs("#playHot").addEventListener("click",startGame);
+qs("#howHot").addEventListener("click",()=>showModal("#howModal"));
+qs("#scoreHot").addEventListener("click",()=>{
+  qs("#scoreModalValue").textContent=state.score;
+  showModal("#scoreModal");
+});
+qs("#settingsHot").addEventListener("click",()=>showModal("#settingsModal"));
+qs("#roundsHot").addEventListener("click",()=>showModal("#roundsModal"));
+qs("#backHome").addEventListener("click",()=>showScreen("#home"));
+qs("#nextBtn").addEventListener("click",()=>nextQuestion());
+qs("#hitBtn").addEventListener("click",()=>{addPoint();setTimeout(()=>nextQuestion(),450)});
+qs("#missBtn").addEventListener("click",()=>{sfx("miss");toast("👻 Sem ponto desta vez");setTimeout(()=>nextQuestion(),450)});
+qs("#guessBtn").addEventListener("click",()=>{
+  const other=state.names[1-state.turn], who=state.names[state.turn];
+  qs("#guessText").textContent=other+" tenta adivinhar o que "+who+" responderia. Depois, "+who+" revela a resposta.";
+  showModal("#guessModal");
+});
+qs("#guessHit").addEventListener("click",()=>{hideModals();addPoint();setTimeout(()=>nextQuestion(),450)});
+qs("#guessMiss").addEventListener("click",()=>{hideModals();sfx("miss");toast("👻 O mistério continua");setTimeout(()=>nextQuestion(),450)});
+
+let audio={ctx:null,master:null,nodes:[],timers:[],running:false};
+function ensureAudio(){
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
+  if(!audio.ctx)audio.ctx=new AC();
+  if(audio.ctx.state==="suspended")audio.ctx.resume();
+  return audio.ctx;
+}
+function sfx(type){
+  const ctx=ensureAudio(); if(!ctx)return;
+  const now=ctx.currentTime;
+  const master=ctx.createGain(); master.gain.value=.13; master.connect(ctx.destination);
+  if(type==="hit"){
+    [392,523.25,659.25].forEach((f,i)=>{let o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0,now+i*.06);g.gain.linearRampToValueAtTime(.09,now+i*.06+.02);g.gain.exponentialRampToValueAtTime(.001,now+i*.06+.5);o.connect(g);g.connect(master);o.start(now+i*.06);o.stop(now+i*.06+.55);});
+  }else if(type==="miss"){
+    let o=ctx.createOscillator(),g=ctx.createGain();o.type="sawtooth";o.frequency.setValueAtTime(130,now);o.frequency.exponentialRampToValueAtTime(48,now+.55);g.gain.setValueAtTime(.08,now);g.gain.exponentialRampToValueAtTime(.001,now+.6);o.connect(g);g.connect(master);o.start(now);o.stop(now+.65);
+  }else{
+    let o=ctx.createOscillator(),g=ctx.createGain();o.type="triangle";o.frequency.setValueAtTime(220,now);o.frequency.exponentialRampToValueAtTime(330,now+.18);g.gain.setValueAtTime(.05,now);g.gain.exponentialRampToValueAtTime(.001,now+.35);o.connect(g);g.connect(master);o.start(now);o.stop(now+.4);
+  }
+}
+function stopAudio(){
+  audio.running=false;
+  audio.timers.forEach(clearTimeout);audio.timers=[];
+  audio.nodes.forEach(n=>{try{n.stop&&n.stop()}catch(e){}try{n.disconnect&&n.disconnect()}catch(e){}});audio.nodes=[];
+  if(audio.master&&audio.ctx){try{audio.master.gain.cancelScheduledValues(audio.ctx.currentTime);audio.master.gain.setTargetAtTime(0,audio.ctx.currentTime,.08)}catch(e){}}
+  const a=qs("#gameAudio");if(a)a.textContent="🔇";
+}
+function startAudio(){
+  if(audio.running)return;
+  const ctx=ensureAudio();if(!ctx)return;
+  const master=ctx.createGain();master.gain.value=.075;master.connect(ctx.destination);audio.master=master;audio.running=true;
+  // Grave contínuo assustador
+  [55,82.41,110].forEach((f,i)=>{let o=ctx.createOscillator(),g=ctx.createGain();o.type=i===1?"triangle":"sine";o.frequency.value=f;g.gain.value=i===0?.20:.065;o.connect(g);g.connect(master);o.start();audio.nodes.push(o,g);});
+  // Pulso lento, como uma respiração/assombração
+  const lfo=ctx.createOscillator(),lg=ctx.createGain();lfo.frequency.value=.11;lg.gain.value=.026;lfo.connect(lg);lg.connect(master.gain);lfo.start();audio.nodes.push(lfo,lg);
+  // Vento gerado por ruído filtrado
+  const b=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.20;
+  const n=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),ng=ctx.createGain();n.buffer=b;n.loop=true;filter.type="lowpass";filter.frequen
