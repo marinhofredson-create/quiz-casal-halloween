@@ -12,16 +12,47 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Rebuild v1.4 game assets
+      - name: Rebuild v1.5 HD game assets
         run: |
           mkdir -p app/src/main/assets
           cat payload_v13/index.part* > app/src/main/assets/index.html
-          base64 -d payload_v12/home.b64 > app/src/main/assets/home.jpg
-          base64 -d payload_v12/couple.b64 > app/src/main/assets/couple.jpg
-          echo "Assets v1.4 reconstruidos:"
-          wc -c app/src/main/assets/index.html app/src/main/assets/home.jpg app/src/main/assets/couple.jpg
+          base64 -d payload_v12/home.b64 > /tmp/home-source.jpg
+          base64 -d payload_v12/couple.b64 > /tmp/couple-source.jpg
+          python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+          from PIL import Image, ImageFilter
+          from pathlib import Path
 
-      - name: Pre-test v1.4 interface
+          def fit(src, dst, size, quality=95):
+              im = Image.open(src).convert('RGB')
+              target_w, target_h = size
+              ratio = max(target_w/im.width, target_h/im.height)
+              new_size = (round(im.width*ratio), round(im.height*ratio))
+              im = im.resize(new_size, Image.Resampling.LANCZOS)
+              left = max(0, (im.width-target_w)//2)
+              top = max(0, (im.height-target_h)//2)
+              im = im.crop((left, top, left+target_w, top+target_h))
+              im = im.filter(ImageFilter.UnsharpMask(radius=1.4, percent=125, threshold=2))
+              im.save(dst, 'JPEG', quality=quality, optimize=True, progressive=True)
+
+          fit('/tmp/home-source.jpg', 'app/src/main/assets/home.jpg', (1280,720), 95)
+          fit('/tmp/couple-source.jpg', 'app/src/main/assets/couple.jpg', (720,828), 95)
+
+          p = Path('app/src/main/assets/index.html')
+          s = p.read_text()
+          s = s.replace('grid-template-columns:minmax(360px,42%) 1fr;', 'grid-template-columns:minmax(420px,48%) 1fr;')
+          s = s.replace('width:min(28%,180px);', 'width:min(38%,240px);')
+          s = s.replace('grid-template-columns:minmax(280px,30%) 1fr;', 'grid-template-columns:minmax(320px,36%) 1fr;')
+          s = s.replace('object-position:center 24%;', 'object-position:center 18%;')
+          s = s.replace('Tudo reorganizado para abrir bonito, com imagem melhor enquadrada, botões separados e totalmente funcionais. Escolham as configurações e entrem na mansão.', 'Agora com imagem em destaque, melhor enquadramento do casal, visual em alta definição e layout pensado para TV e Android. Escolham as configurações e entrem na mansão.')
+          p.write_text(s)
+
+          for f in ['app/src/main/assets/home.jpg','app/src/main/assets/couple.jpg']:
+              im = Image.open(f)
+              print(f, im.size, Path(f).stat().st_size)
+          PY
+
+      - name: Pre-test v1.5 HD interface
         run: |
           test -s app/src/main/assets/index.html
           test -s app/src/main/assets/home.jpg
@@ -38,7 +69,12 @@ jobs:
           grep -q 'function nextQuestion' app/src/main/assets/index.html
           grep -q 'function startAudio' app/src/main/assets/index.html
           ! grep -q 'playHot' app/src/main/assets/index.html
-          echo 'Pre-teste estrutural v1.4: OK'
+          python3 - <<'PY'
+          from PIL import Image
+          assert Image.open('app/src/main/assets/home.jpg').size == (1280,720)
+          assert Image.open('app/src/main/assets/couple.jpg').size == (720,828)
+          print('Pre-teste v1.5 HD: layout, controles e dimensões das imagens OK')
+          PY
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -56,24 +92,30 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build clean debug APK v1.4
-        run: |
-          gradle clean assembleDebug --stacktrace
+      - name: Build clean debug APK v1.5 HD
+        run: gradle clean assembleDebug --stacktrace
 
-      - name: Validate APK package, launcher and signature
+      - name: Validate APK package, launcher, signature and HD assets
         run: |
           APK=app/build/outputs/apk/debug/app-debug.apk
           test -s "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee /tmp/badging.txt
-          grep -q "package: name='com.fredirene.quizcasalhalloween.v14'" /tmp/badging.txt
+          grep -q "package: name='com.fredirene.quizcasalhalloween.v15'" /tmp/badging.txt
           grep -q "launchable-activity: name='com.fredirene.quizcasalhalloween.MainActivity'" /tmp/badging.txt
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
           unzip -t "$APK" >/dev/null
-          echo 'APK v1.4: package, launcher, assinatura e ZIP OK'
+          unzip -p "$APK" assets/home.jpg > /tmp/apk-home.jpg
+          unzip -p "$APK" assets/couple.jpg > /tmp/apk-couple.jpg
+          python3 - <<'PY'
+          from PIL import Image
+          assert Image.open('/tmp/apk-home.jpg').size == (1280,720)
+          assert Image.open('/tmp/apk-couple.jpg').size == (720,828)
+          print('APK v1.5 HD: package, launcher, assinatura, ZIP e imagens HD OK')
+          PY
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: QuizCasalHalloween-v1.4-clean-apk
+          name: QuizCasalHalloween-v1.5-HD-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
