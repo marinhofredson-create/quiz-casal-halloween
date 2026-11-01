@@ -1,0 +1,13 @@
+cy.value=720;ng.gain.value=.045;n.connect(filter);filter.connect(ng);ng.connect(master);n.start();audio.nodes.push(n,filter,ng);
+  // Sino fantasmagórico ocasional
+  function bell(){if(!audio.running)return;const now=ctx.currentTime;const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=[196,220,246.94,293.66][Math.floor(Math.random()*4)];g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(.08,now+.02);g.gain.exponentialRampToValueAtTime(.001,now+2.7);o.connect(g);g.connect(master);o.start(now);o.stop(now+2.8);audio.timers.push(setTimeout(bell,4800+Math.random()*5200));}
+  audio.timers.push(setTimeout(bell,1400));
+  const a=qs("#gameAudio");if(a)a.textContent="🔊";
+}
+function toggleAudio(){audio.running?stopAudio():startAudio()}
+qs("#audioHot").addEventListener("click",toggleAudio);
+qs("#gameAudio").addEventListener("click",toggleAudio);
+
+</script>
+</body>
+</html>
