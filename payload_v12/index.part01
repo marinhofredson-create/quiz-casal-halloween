@@ -1,0 +1,128 @@
+cle at 12% 84%,rgba(156,77,255,.16),transparent 30%),
+   linear-gradient(180deg,#1a1021,#100b15);
+  padding:2vw;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+  box-shadow:0 24px 50px rgba(0,0,0,.32);
+  transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.2,.7,.2,1),opacity .3s ease;
+}
+.questionCard.flip{transform:rotateY(180deg);opacity:.18}
+.questionText{font-size:clamp(34px,3.1vw,66px);line-height:1.05;font-weight:1000;letter-spacing:-.03em;max-width:95%}
+.promptText{margin-top:1.3vw;color:var(--muted);font-size:clamp(16px,1.1vw,24px)}
+.gameControls{display:grid;grid-template-columns:1.15fr .9fr .9fr .75fr;gap:.7vw;flex:0 0 auto}
+.gameControls .btn{min-height:60px;font-size:clamp(14px,.92vw,20px)}
+
+.progressWrap{height:9px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:.7vw}
+.progressBar{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--orange));transition:width .35s ease}
+
+.toast{
+  position:absolute;left:50%;top:10%;transform:translate(-50%,-20px);opacity:0;pointer-events:none;
+  background:#120b18;border:1px solid rgba(255,255,255,.12);padding:14px 20px;border-radius:999px;
+  font-weight:1000;z-index:15;transition:.25s ease;box-shadow:0 18px 45px rgba(0,0,0,.35)
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+.confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:12}
+.confetti span{position:absolute;top:-20px;font-size:22px;animation:fall 1.8s ease-in forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(520deg);opacity:.15}}
+
+@media(max-width:1100px){
+  .mainBoard{grid-template-columns:33% 1fr}
+  .gameControls{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section id="home" class="screen active" aria-label="Tela principal Quiz do Casal Halloween">
+    <button id="playHot" class="hotspot"><span class="hiddenLabel">Jogar Agora</span></button>
+    <button id="howHot" class="hotspot"><span class="hiddenLabel">Como Funciona</span></button>
+    <button id="scoreHot" class="hotspot"><span class="hiddenLabel">Placar</span></button>
+    <button id="settingsHot" class="hotspot"><span class="hiddenLabel">Configurações</span></button>
+    <button id="roundsHot" class="hotspot"><span class="hiddenLabel">Rodadas</span></button>
+    <button id="audioHot" class="hotspot"><span class="hiddenLabel">Áudio</span></button>
+  </section>
+
+  <section id="game" class="screen">
+    <div class="gameShell">
+      <div class="gameTop">
+        <div><button class="backBtn" id="backHome">← Início</button></div>
+        <div class="gameTitle">🎃 QUIZ DO CASAL — FRED & IRENE</div>
+        <div class="topRight">
+          <div class="counter">Rodada <span id="roundNow">1</span>/<span id="roundTotal">18</span></div>
+          <div class="scoreBox">🕯️ <span id="score">0</span> pts</div>
+          <button class="audioBtn" id="gameAudio">🔊</button>
+        </div>
+      </div>
+
+      <div class="mainBoard">
+        <div class="leftPanel">
+          <img class="leftPhoto" src="couple.jpg" alt="Fred e Irene em versão temática de Halloween">
+          <div class="leftOverlay"></div>
+          <div class="coupleTag">Fred ❤️ Irene • 4 meses de mistérios</div>
+        </div>
+
+        <div class="rightPanel">
+          <div class="categoryRow">
+            <div class="categoryBadge" id="categoryBadge">🔮 MISTÉRIO</div>
+            <div class="turnBadge" id="turnBadge">Responde: Fred</div>
+          </div>
+
+          <div class="cardStage">
+            <div class="questionCard" id="questionCard">
+              <div class="questionText" id="questionText">Preparados para descobrir mais um segredo?</div>
+              <div class="promptText" id="promptText">Clique em “Próxima” para começar.</div>
+            </div>
+          </div>
+
+          <div class="gameControls">
+            <button class="btn primary" id="guessBtn">💘 Tentar adivinhar</button>
+            <button class="btn green" id="hitBtn">😏 Acertou +1</button>
+            <button class="btn red" id="missBtn">👻 Errou</button>
+            <button class="btn secondary" id="nextBtn">➡ Próxima</button>
+          </div>
+          <div class="progressWrap"><div class="progressBar" id="progressBar"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="confetti" id="confetti"></div>
+  </section>
+
+  <div class="modal" id="howModal">
+    <div class="modalBox">
+      <h2>👻 Como funciona</h2>
+      <ol>
+        <li>O jogo alterna entre Fred e Irene.</li>
+        <li>Um responde à pergunta; o outro pode tentar adivinhar a resposta.</li>
+        <li>Quando houver acerto ou sintonia, marque +1 ponto.</li>
+        <li>As categorias misturam gostos, sonhos, conexão, mistério e clima picante.</li>
+      </ol>
+      <div class="modalActions"><button class="btn primary closeModal">Entendi</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="scoreModal">
+    <div class="modalBox">
+      <h2>🏆 Placar atual</h2>
+      <p style="font-size:32px;font-weight:1000;color:#ffd36f"><span id="scoreModalValue">0</span> pontos de conexão</p>
+      <p id="scoreMessage">A mansão ainda tem muitos segredos para revelar.</p>
+      <div class="modalActions"><button class="btn primary closeModal">Voltar</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="modalBox">
+      <h2>⚙️ Configurações</h2>
+      <p>Intensidade das perguntas:</p>
+      <select id="intensity" style="width:100%;height:56px;border-radius:14px;background:#100b15;color:#fff;border:1px solid rgba(255,255,255,.12);padding:0 14px">
+        <option value="leve">Leve</option>
+        <option value="misto" selected>Misto</option>
+        <option value="picante">Mais picante</option>
+      </select>
+      <div class="modalActions"><button class="btn primary closeModal">Salvar</button></div>
+    </div>
+  </div>
+
+  <div class="modal" id="roundsModal">
+    <div cl
